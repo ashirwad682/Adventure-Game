@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Capsule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .story-item {
+            background: #f9f9f9;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .story-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .story-id {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .story-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .status-online {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #764ba2;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .story-line {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            min-height: 80px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .progress {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📖 Story Capsule</h1>
+
+        <div class="card">
+            <h2>Available Stories</h2>
+            <div id="storiesList"></div>
+        </div>
+        <div class="card hidden" id="readerSection">
+            <h2>Reading Story</h2>
+            
+            <div class="progress">
+                Line <span id="currentLine">1</span> of <span id="totalLines">0</span>
+            </div>
+
+            <div class="story-line" id="storyContent">
+            </div>
+
+            <div class="controls">
+                <button onclick="previousLine()" id="prevBtn">← Previous</button>
+                <button onclick="nextLine()" id="nextBtn">Next →</button>
+            </div>
+
+            <button onclick="closeReader()" style="width: 100%; background: #999;">Close Story</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStoryLines = [];
+        let currentLineIndex = 0;
+        let currentStoryId = null;
+
+        function loadStories() {
+            fetch('/stories')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('storiesList');
+                    if (data.success && data.stories.length > 0) {
+                        list.innerHTML = data.stories.map(story => `
+                            <div class="story-item">
+                                <div class="story-title">${story.message.substring(0, 50)}...</div>
+                                <div class="story-id">ID: ${story.id}</div>
+                                <span class="story-status status-${story.status}">${story.status}</span>
+                                <button onclick="readStory('${story.id}')">Read</button>
+                            </div>
+                        `).join('');
+                    } else {
+                        list.innerHTML = '<div class="empty-message">No stories available</div>';
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('storiesList').innerHTML = '<div class="empty-message">Error loading stories</div>';
+                });
+        }
+
+        function readStory(id) {
+            fetch(`/story/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const story = data.story;
+                        currentStoryId = story.id;
+                        currentStoryLines = story.message.split('\n').filter(line => line.trim() !== '');
+                        
+                        if (currentStoryLines.length === 0) {
+                            currentStoryLines = [story.message];
+                        }
+                        
+                        currentLineIndex = 0;
+                        document.getElementById('readerSection').classList.remove('hidden');
+                        displayLine();
+                        document.getElementById('readerSection').scrollIntoView({ behavior: 'smooth' });
+                    }
+                })
+                .catch(() => alert('Error loading story'));
+        }
+
+        function displayLine() {
+            const line = currentStoryLines[currentLineIndex];
+            document.getElementById('storyContent').textContent = line;
+            document.getElementById('currentLine').textContent = currentLineIndex + 1;
+            document.getElementById('totalLines').textContent = currentStoryLines.length;
+            
+            document.getElementById('prevBtn').disabled = currentLineIndex === 0;
+            document.getElementById('nextBtn').disabled = currentLineIndex === currentStoryLines.length - 1;
+            
+            if (currentLineIndex === currentStoryLines.length - 1) {
+                document.getElementById('nextBtn').textContent = '✓ Finished';
+            } else {
+                document.getElementById('nextBtn').textContent = 'Next →';
+            }
+        }
+
+        function nextLine() {
+            if (currentLineIndex < currentStoryLines.length - 1) {
+                currentLineIndex++;
+                displayLine();
+            }
+        }
+
+        function previousLine() {
+            if (currentLineIndex > 0) {
+                currentLineIndex--;
+                displayLine();
+            }
+        }
+
+        function closeReader() {
+            document.getElementById('readerSection').classList.add('hidden');
+            currentStoryLines = [];
+            currentLineIndex = 0;
+            currentStoryId = null;
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (document.getElementById('readerSection').classList.contains('hidden')) return;
+            
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                nextLine();
+            } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                previousLine();
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                nextLine();
+            } else if (event.key === 'Escape') {
+                event.preventDefault();
+                closeReader();
+            }
+        });
+
+        loadStories();
+
+        setInterval(loadStories, 5000);
+    </script>
+</body>
+</html>
