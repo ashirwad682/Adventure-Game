@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "The Lost Temple",
+    "author": "Adventure Master",
+    "content": "You enter a mysterious temple deep in the jungle. Ancient symbols cover the walls, and a faint golden glow emanates from the center chamber. Do you dare to explore deeper?",
+    "choices": [
+      { "text": "Enter the chamber", "next": 2 },
+      { "text": "Read the symbols first", "next": 3 },
+      { "text": "Leave the temple", "next": 4 }
+    ],
+    "createdAt": "2026-02-14T00:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "title": "The Golden Artifact",
+    "author": "Adventure Master",
+    "content": "You step into the golden chamber and see a magnificent artifact on a pedestal. As you reach for it, the ground begins to shake!",
+    "choices": [
+      { "text": "Grab the artifact and run", "next": 5 },
+      { "text": "Run back immediately", "next": 4 }
+    ],
+    "createdAt": "2026-02-14T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "title": "Ancient Secrets",
+    "author": "Adventure Master",
+    "content": "The symbols reveal a map showing a hidden chamber beneath the temple. You've discovered the true secret of this place!",
+    "choices": [
+      { "text": "Find the hidden chamber", "next": 5 },
+      { "text": "Leave with the knowledge", "next": 4 }
+    ],
+    "createdAt": "2026-02-14T00:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "title": "Safe Return",
+    "author": "Adventure Master",
+    "content": "You safely exit the temple. The adventure ends here, but the memories will last forever. Perhaps you'll return one day?",
+    "choices": [
+      { "text": "Start over", "next": 1 }
+    ],
+    "createdAt": "2026-02-14T00:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "title": "Victory!",
+    "author": "Adventure Master",
+    "content": "Congratulations! You've successfully completed the adventure and discovered the temple's greatest treasures!",
+    "choices": [
+      { "text": "Play again", "next": 1 }
+    ],
+    "createdAt": "2026-02-14T00:00:00.000Z"
+  }
+]
